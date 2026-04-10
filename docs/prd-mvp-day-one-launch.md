@@ -50,7 +50,7 @@ A **central ledger** records revenue from **donations**, **sales**, and **Quest-
 
 | ID | Feature | Requirement |
 |----|---------|-------------|
-| **2.1** | **Payment gateway abstraction** | Provider-agnostic **checkout and payout** layer. Candidates include **Stripe**, **Abacate Pay**, **InfinitePay** (final choice per market, fees, and PIX coverage). Single integration surface in app code; webhooks verified and **idempotent**. |
+| **2.1** | **Payment gateway abstraction** | Provider-agnostic **checkout and payout** layer. **InfinitePay** (decided — Brazil-first internal processor, PIX 0%). Single integration surface in app code; webhooks verified and **idempotent**. InfinitePay is not creator-facing; PubliHub is the merchant of record. |
 | **2.2** | **Live stream alerts (OBS / Browser Source)** | **Open beta — mandatory.** Unique **`/hud/[token]`** URL per creator. Fan **donations and Hub interactions** → **`wallet_ledger`** → **Realtime** → overlay ([core business flow](./system-architecture-and-data-flow.md#core-business-flow-fan--wallet--hud)). |
 | **2.3** | **Micro-interactions** | Fans can pay to trigger **TTS**, **sound effects**, or **pinned messages** on **Hub + HUD** as shipped; v1 may **Hub-only** with HUD **alerts** for paid events. |
 
@@ -117,7 +117,7 @@ A **central ledger** records revenue from **donations**, **sales**, and **Quest-
 | **Frontend** | **Next.js (App Router)** with **React**; **shadcn/ui** + Tailwind for UI primitives. **Mobile-web first** layouts. |
 | **State and AI** | **Vercel AI SDK** for **streaming** chat and **tool-first Generative UI**. **LangGraph** (or equivalent) for **multi-step agentic workflows** (webhook interpretation → ledger → Quest update → realtime emit), orchestrated **server-side**; outputs remain **structured** and **validated** before client render. |
 | **Database** | **PostgreSQL** (via Supabase in current foundation docs): **immutable wallet ledger**, hubs, blocks, quests, webhook idempotency keys, RLS for roles. |
-| **Payments** | **Abstracted payment layer** over **Stripe / Abacate Pay / InfinitePay** (and future providers): checkout creation, webhooks, payout initiation, fee accounting. |
+| **Payments** | **Abstracted payment layer** over **InfinitePay** (internal, non-transparent) with backup providers for future: checkout creation, webhooks, payout initiation, fee accounting. |
 
 **Security and compliance (non-negotiable for MVP)**  
 No executable code from the model on the client; **allowlisted** UI components; **human-in-the-loop** for **withdrawal** and sensitive account changes; **signed / scoped** HUD subscriptions **(open beta)**.
@@ -141,5 +141,7 @@ No executable code from the model on the client; **allowlisted** UI components; 
 - [Phase 1 MVP execution plan](./phase-1-mvp-execution-plan.md)  
 - [Streaming & OBS integration plan](./streaming-and-obs-integration-plan.md)  
 - [System architecture and data flow](./system-architecture-and-data-flow.md)  
-- [Component tree and state strategy](./component-tree-and-state-strategy.md)  
+- [Component tree and state strategy](./component-tree-and-state-strategy.md)
+- [Payment & payout spec](./payment-and-payout-spec.md)
+- [Roadmap](./roadmap.md)  
 - [Supabase database schema (draft)](./supabase-database-schema.md)

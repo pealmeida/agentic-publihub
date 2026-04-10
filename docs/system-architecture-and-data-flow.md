@@ -23,7 +23,7 @@ flowchart TB
     Realtime[Realtime Broadcast]
   end
   subgraph external [External]
-    Pay[Payment Providers]
+    Pay[InfinitePay]
     OBS[OBS Browser Source HUD]
   end
   NextApp --> APIRoutes

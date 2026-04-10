@@ -51,11 +51,11 @@ Creator can **edit a hub**, **fan preview**, **view ledger**, **copy HUD URL** i
 
 Before implementation, confirm:
 
-1. **Payments**: For managed (non-transparent) flows, will v1 use **Stripe Connect**, **Pagar.me**, **Mercado Pago**, or another Brazil-first stack? Is **PIX** the only fiat payout for MVP?
-2. **Webhooks**: Single Next.js Route Handler per provider with signature verification, or **Supabase Edge Functions** for some events? Do you require an **outbox** pattern (table + worker) for Realtime emit vs doing it inline in the webhook?
+1. **Payments**: For managed (non-transparent) flows, will v1 use **InfinitePay** (decided — Brazil-first, PIX 0%), **Abacate Pay**, or **Mercado Pago** as backup? Is **PIX** the only fiat payout for MVP?
+2. **Webhooks**: Single Next.js Route Handler per provider with dual verification (webhook + `payment_check`), or **Supabase Edge Functions** for some events? Do you require an **outbox** pattern (table + worker) for Realtime emit vs doing it inline in the webhook?
 3. **AI prompt engineering**: Should the copilot **default persona** be Portuguese (pt-BR) first? Any **brand voice** constraints and **forbidden actions** (e.g. never initiate withdrawal without explicit user confirmation tool)?
 4. **Multi-tenant custom domains**: Vercel domains API vs Cloudflare for SSL — any existing preference?
-5. **Enterprise “bring your own Stripe”**: Is that **OAuth Connect** to the creator’s Stripe account, or **API key** storage (higher compliance burden)?
+5. **Enterprise “bring your own provider”**: Is that **OAuth** to the creator’s InfinitePay account, or **API key** storage (higher compliance burden)?
 
 ## Related docs
 

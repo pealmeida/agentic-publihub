@@ -391,6 +391,41 @@ const INITIAL_MOCK_INTEGRATIONS: MockIntegration[] = [
     detail: "Tracking ID not set (mock).",
     credentialsKind: "api_key",
   },
+  {
+    id: "shopify",
+    name: "Shopify",
+    status: "failed",
+    detail: "API access token not set (mock).",
+    credentialsKind: "api_key",
+  },
+  {
+    id: "woocommerce",
+    name: "WooCommerce",
+    status: "failed",
+    detail: "Consumer key/secret not set (mock).",
+    credentialsKind: "api_key",
+  },
+  {
+    id: "mercadolivre",
+    name: "Mercado Livre",
+    status: "failed",
+    detail: "Access token not set (mock).",
+    credentialsKind: "oauth",
+  },
+  {
+    id: "adobecommerce",
+    name: "Adobe Commerce (Magento)",
+    status: "failed",
+    detail: "Integration key not set (mock).",
+    credentialsKind: "api_key",
+  },
+  {
+    id: "wixstore",
+    name: "Wix Store",
+    status: "failed",
+    detail: "API token not set (mock).",
+    credentialsKind: "oauth",
+  },
 ];
 
 type TabId = "hub" | "wallet" | "quests" | "widgets" | "settings";
@@ -2086,6 +2121,24 @@ function IntegrationsEditorSheetOverlay({
   const [keyDrafts, setKeyDrafts] = useState<
     Record<string, { clientId: string; secret: string }>
   >({});
+  const [activeCategoryTab, setActiveCategoryTab] = useState<string>("all");
+
+  const integrationCategories: Record<string, string[]> = {
+    streaming: ["twitch", "youtube", "tiktok"],
+    social: ["discord", "instagram", "x"],
+    messaging: ["whatsapp", "telegram"],
+    marketplaces: ["shopee", "amazon", "mercadolivre"],
+    ecommerce: ["shopify", "woocommerce", "adobecommerce", "wixstore"],
+    tools: ["google", "streamlabs"],
+  };
+
+  const getFilteredIntegrations = () => {
+    if (activeCategoryTab === "all") return draft;
+    const categoryIds = integrationCategories[activeCategoryTab] ?? [];
+    return draft.filter((i) => categoryIds.includes(i.id));
+  };
+
+  const filteredDraft = getFilteredIntegrations();
 
   useEffect(() => {
     if (open) {
@@ -2121,8 +2174,32 @@ function IntegrationsEditorSheetOverlay({
         Tap an integration to open OAuth or API key details. Toggle simulates
         connected vs failed (mock).
       </p>
+      <div className="mb-4 flex gap-1.5 overflow-x-auto pb-2">
+        {[
+          { id: "all", label: "All" },
+          { id: "streaming", label: "Streaming" },
+          { id: "social", label: "Social" },
+          { id: "messaging", label: "Messaging" },
+          { id: "marketplaces", label: "Marketplaces" },
+          { id: "ecommerce", label: "E-commerce" },
+          { id: "tools", label: "Tools" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveCategoryTab(tab.id)}
+            className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-colors ${
+              activeCategoryTab === tab.id
+                ? "bg-indigo-600 text-white"
+                : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
       <div className="mb-6 space-y-3">
-        {draft.map((row) => {
+        {filteredDraft.map((row) => {
           const expanded = Boolean(editorExpanded[row.id]);
           const keys = keyDrafts[row.id] ?? { clientId: "", secret: "" };
           return (
@@ -2353,6 +2430,260 @@ function IntegrationsEditorSheetOverlay({
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
               {panelBody}
             </div>
+          </div>
+        </div>
+      </div>
+    </>,
+    document.body
+  );
+}
+
+function PlanDialogSheetOverlay({
+  open,
+  currentPlan,
+  onClose,
+  onSelectPlan,
+}: {
+  open: boolean;
+  currentPlan: string;
+  onClose: () => void;
+  onSelectPlan: (plan: string) => void;
+}) {
+  const [selectedPlan, setSelectedPlan] = useState(currentPlan);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedPlan(currentPlan);
+    }
+  }, [open, currentPlan]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const plans = [
+    {
+      id: "Free",
+      name: "Free",
+      price: "R$ 0",
+      period: "/mês",
+      credits: "25",
+      features: [
+        "1 Hub com até 5 páginas",
+        "Produtos digitais (até 5)",
+        "Widget de doação (OBS)",
+        "Sem taxa de transação",
+        "Mín. saque: R$ 100",
+      ],
+      unavailable: [],
+    },
+    {
+      id: "Starter",
+      name: "Starter",
+      price: "R$ 99",
+      period: "/mês",
+      credits: "100",
+      popular: true,
+      features: [
+        "3 Hubs com até 10 páginas cada",
+        "Produtos digitais (até 30)",
+        "Widgets customizáveis",
+        "Sem taxa de transação",
+        "Mín. saque: R$ 50",
+        "Suporte priority",
+      ],
+      unavailable: [],
+    },
+    {
+      id: "Growth",
+      name: "Growth",
+      price: "R$ 299",
+      period: "/mês",
+      credits: "500",
+      features: [
+        "Hubs ilimitados",
+        "Produtos digitais ilimitados",
+        "Sincronização e-commerce",
+        "Marketplace affiliations",
+        "Análise avançada",
+        "API access",
+      ],
+      unavailable: ["Open beta"],
+    },
+  ];
+
+  const dialogContent = (
+    <>
+      <div className="mb-6 text-center">
+        <h2 className="text-xl font-black text-slate-900">Escolha seu plano</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          Todos os planos incluem acesso ao Copilot AI
+        </p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {plans.map((plan) => {
+          const isSelected = selectedPlan === plan.id;
+          const isCurrent = currentPlan === plan.id;
+          const isUnavailable = plan.unavailable.length > 0;
+          return (
+            <button
+              key={plan.id}
+              type="button"
+              disabled={isUnavailable}
+              onClick={() => setSelectedPlan(plan.id)}
+              className={`relative flex flex-col rounded-2xl border-2 p-4 text-left transition-all ${
+                isSelected
+                  ? "border-indigo-600 bg-indigo-50"
+                  : "border-slate-200 bg-white hover:border-slate-300"
+              } ${isUnavailable ? "opacity-50" : ""}`}
+            >
+              {plan.popular && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-3 py-1 text-[10px] font-black uppercase text-white">
+                  Mais popular
+                </span>
+              )}
+              {isCurrent && (
+                <span className="absolute -top-3 right-3 rounded-full bg-emerald-500 px-2 py-1 text-[10px] font-black uppercase text-white">
+                  Atual
+                </span>
+              )}
+              <div className="mb-3">
+                <h3 className="text-lg font-black text-slate-900">{plan.name}</h3>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-slate-900">
+                    {plan.price}
+                  </span>
+                  <span className="text-xs text-slate-500">{plan.period}</span>
+                </div>
+              </div>
+              <p className="mb-4 text-xs text-slate-500">
+                <span className="font-bold text-slate-800">{plan.credits}</span>{" "}
+                créditos AI/mês
+              </p>
+              <ul className="mt-auto space-y-2">
+                {plan.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-xs text-slate-600">
+                    <Check
+                      size={14}
+                      className="mt-0.5 shrink-0 text-emerald-600"
+                    />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              {isUnavailable && (
+                <p className="mt-3 rounded-lg bg-rose-100 px-3 py-2 text-xs font-bold text-rose-800">
+                  Em breve
+                </p>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 rounded-xl border-2 border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          disabled={selectedPlan === currentPlan}
+          onClick={() => {
+            onSelectPlan(selectedPlan);
+            onClose();
+          }}
+          className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold transition-colors ${
+            selectedPlan === currentPlan
+              ? "cursor-not-allowed bg-slate-100 text-slate-400"
+              : "bg-indigo-600 text-white hover:bg-indigo-700"
+          }`}
+        >
+          {selectedPlan === currentPlan ? "Plano atual" : `Mudar para ${selectedPlan}`}
+        </button>
+      </div>
+    </>
+  );
+
+  const titleId = "plan-dialog-title";
+
+  return createPortal(
+    <>
+      <div className="fixed inset-0 z-[75] md:hidden" role="presentation">
+        <div
+          className={`absolute inset-0 bg-slate-900/50 transition-opacity ${
+            open ? "opacity-100" : "opacity-0"
+          }`}
+          aria-hidden
+        />
+        <div
+          className={`absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-5 transition-transform ${
+            open ? "translate-y-0" : "translate-y-full"
+          }`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <h2 id={titleId} className="text-lg font-black text-slate-900">
+              Planos
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
+              aria-label="Fechar"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          {dialogContent}
+        </div>
+      </div>
+
+      <div className="fixed inset-0 z-[75] hidden md:block" role="presentation">
+        <button
+          type="button"
+          className="absolute inset-0 z-0 cursor-default bg-slate-900/50 backdrop-blur-[2px]"
+          aria-label="Fechar diálogo"
+          onClick={onClose}
+        />
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-6">
+          <div
+            className="pointer-events-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_25px_80px_-12px_rgba(15,23,42,0.45)]"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h2 id={titleId} className="text-lg font-black text-slate-900">
+                Planos
+              </h2>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
+                aria-label="Fechar"
+              >
+                <X size={22} />
+              </button>
+            </div>
+            <div className="p-6">{dialogContent}</div>
           </div>
         </div>
       </div>
@@ -2851,6 +3182,7 @@ export default function PubliHubApp() {
   const [integrationsEditorOpen, setIntegrationsEditorOpen] = useState(false);
   const [integrationsAccordionOpen, setIntegrationsAccordionOpen] =
     useState(false);
+  const [planDialogOpen, setPlanDialogOpen] = useState(false);
 
   useEffect(() => {
     if (activeTab !== "widgets") {
@@ -4029,6 +4361,14 @@ export default function PubliHubApp() {
               setIntegrationsEditorOpen(false);
             }}
           />
+          <PlanDialogSheetOverlay
+            open={planDialogOpen}
+            currentPlan={settingsData.plan}
+            onClose={() => setPlanDialogOpen(false)}
+            onSelectPlan={(plan) =>
+              setSettingsData((prev) => ({ ...prev, plan }))
+            }
+          />
         </section>
 
         <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -4123,6 +4463,7 @@ export default function PubliHubApp() {
             </div>
             <button
               type="button"
+              onClick={() => setPlanDialogOpen(true)}
               className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white"
             >
               Compare plans (mock)

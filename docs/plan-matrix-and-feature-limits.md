@@ -30,7 +30,8 @@ After open beta, enable **Growth** and **coming soon** rows per release notes.
 |--------|-------------|-----------------|-----------------|
 | **Product types** | Digital only | Digital only | **Digital + e-com** |
 | **Digital workflow** | Title, price, link | Title, price, link | **Full customization** |
-| **Marketplace sync** | None | None | **Shopee, Amazon,** etc. |
+| **Marketplace sync** | None | None | **Amazon, Shopee, Mercado Livre** |
+| **E-commerce platforms** | None | None | **Shopify, WooCommerce, Adobe Commerce, Wix** |
 | **Sales tracking** | Manual | Manual | **Auto — webhook tracking** |
 | **Coupons & Quests** | Basic | Basic | **Advanced + brand sync** |
 
@@ -45,7 +46,8 @@ After open beta, enable **Growth** and **coming soon** rows per release notes.
 
 | Metric | Free | Starter | Growth |
 |--------|------|---------|--------|
-| **Inbound fee** | 5.9% + R$ 0.50 | 4.9% + R$ 0.50 | 3.9% + R$ 0.50 |
+| **Inbound fee (PIX)** | 4.9% + R$ 0.30 | 3.9% + R$ 0.30 | 2.9% + R$ 0.30 |
+| **Inbound fee (Card)** | 7.9% + R$ 0.50 | 6.9% + R$ 0.50 | 5.9% + R$ 0.50 |
 | **Withdrawal fee** | R$ 1.50 | R$ 0.50 | **R$ 0.00** |
 | **Minimum withdrawal** | **R$ 100** | **R$ 50** | **R$ 25** *(Growth; confirm at launch)* |
 | **Weekly withdrawal limit** | R$ 500 | R$ 5,000 | **Unlimited** |

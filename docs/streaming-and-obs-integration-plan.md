@@ -108,6 +108,9 @@ Mirror **native** stream events into the **same** HUD queue *(typically post–o
 - [Component tree and state strategy](./component-tree-and-state-strategy.md)  
 - [PRD — MVP (Day One Launch)](./prd-mvp-day-one-launch.md)  
 - [Phase 1 MVP execution plan](./phase-1-mvp-execution-plan.md)
+- [HUD token security spec](./hud-token-security-spec.md)
+- [Widget type registry](./widget-type-registry.md)
+- [Roadmap](./roadmap.md)
 
 ### External references (official)
 

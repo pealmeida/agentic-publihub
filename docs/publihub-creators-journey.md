@@ -116,9 +116,9 @@ Creator meets the **minimum withdrawal** for their plan (**R$ 100** Free, **R$ 5
 
 **Result**  
 - Copilot renders the **AG-UI withdrawal widget** (confirm step, human-in-the-loop; see [component tree](./component-tree-and-state-strategy.md)).  
-- On confirm, payout runs through the **managed gateway** (e.g. Stripe / Abacate Pay / InfinitePay — final providers TBD in product alignment), subject to **weekly limits** and **per-payout withdrawal fee**.  
+- On confirm, payout runs via PIX to the creator's registered bank key (InfinitePay as internal processor, not creator-facing), subject to **weekly limits** and **per-payout withdrawal fee**.
 
-**Upsell trigger (Sovereign)**  
+**Upsell trigger (Growth)**  
 Copilot surfaces economics transparently, e.g.  
 *“You’ve paid R$ 150 in transaction fees this week. On **Sovereign**, you’d save about R$ 60 and get 0% withdrawal fee. Want to upgrade?”*
 

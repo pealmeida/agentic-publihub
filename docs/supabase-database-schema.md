@@ -1,6 +1,12 @@
-# PubliHub — Supabase Database Schema (Draft)
+# PubliHub — Supabase Database Schema
 
-Foundation documentation (Phase 0). Core tables for users, storefront JSON, immutable wallet ledger, quests, and subscriptions. Final SQL migrations will refine types and constraints.
+Foundation documentation. Core tables for users, storefront JSON, immutable wallet ledger, quests, and subscriptions. Final SQL migrations will refine types and constraints.
+
+**Canonical decisions** (resolves prior open questions):
+- `amount_cents` is **positive for credits, negative for debits** (single signed integer).
+- `hud_tokens` is a **separate table** (not embedded in `creator_hud_settings`).
+- `orders` and `checkout_sessions` tables track purchases before they become ledger entries.
+- Secrets encrypted via **Supabase Vault** (not plaintext jsonb).
 
 ## Conventions
 
@@ -55,8 +61,8 @@ Foundation documentation (Phase 0). Core tables for users, storefront JSON, immu
 ### `wallet_ledger` (append-only)
 
 - `id`, `user_id` (creator receiving funds)
-- `entry_type` enum: `credit_sale`, `credit_donation`, `credit_affiliate`, `debit_withdrawal`, `fee`, `adjustment`
-- `amount_cents` (signed or separate debit flag — pick one convention and stick to it)
+- `entry_type` enum: `credit_sale`, `credit_donation`, `credit_affiliate`, `debit_withdrawal`, `debit_fee`, `debit_refund`, `adjustment`
+- `amount_cents` **signed integer**: positive for credits, negative for debits
 - `currency`
 - `idempotency_key` (unique) — e.g. `stripe_evt_…` or internal UUID
 - `reference_type`, `reference_id` — link to order/payout row
@@ -65,9 +71,11 @@ Foundation documentation (Phase 0). Core tables for users, storefront JSON, immu
 
 ### `withdrawals`
 
-- `id`, `user_id`, `status` (`pending`, `processing`, `paid`, `failed`)
-- `amount_cents`, `currency`, `method` (`pix`, `crypto`, …)
-- `provider_ref`, `created_at`, `completed_at`
+- `id`, `user_id`, `status` (`queued`, `approved`, `processing`, `paid`, `failed`, `rejected`)
+- `amount_cents`, `currency`, `method` (`pix`)
+- `provider_ref`, `version`, `fee_cents`, `net_cents`, `idempotency_key`
+- `created_at`, `completed_at`, `processed_at`, `rejected_reason`
+- See [Payment automation pipeline plan §5](./payment-automation-pipeline-plan.md#5-database-changes) for extended schema
 
 ### `quests`
 
@@ -83,8 +91,36 @@ Foundation documentation (Phase 0). Core tables for users, storefront JSON, immu
 
 ### `integrations` (WhatsApp/Telegram, marketplace sync)
 
-- `id`, `user_id`, `provider`, `config` jsonb (encrypted secrets via Vault or external secret store — avoid plain secrets in DB)
+- `id`, `user_id`, `provider`, `config` jsonb (encrypted secrets via Supabase Vault — never store plaintext API keys or OAuth tokens in this column; use `vault` extension for secret fields)
 - `enabled` boolean
+- `status` enum: `connected`, `failed`, `pending`
+
+### `orders`
+
+- `id`, `creator_id`, `fan_id` (nullable — fans may not be logged in)
+- `product_id` (FK → `digital_products`, nullable for donations)
+- `type` enum: `digital_product`, `donation`, `quest_reward`
+- `amount_cents`, `currency`
+- `stripe_checkout_session_id` (unique)
+- `status` enum: `pending`, `completed`, `refunded`, `disputed`
+- `metadata` jsonb (fan message, product delivery link)
+- `created_at`, `completed_at`
+
+### `checkout_sessions`
+
+- `id`, `order_id` (FK → `orders`)
+- `stripe_session_id` (unique)
+- `expires_at`
+- `status` enum: `open`, `complete`, `expired`
+
+### `hud_tokens`
+
+- `id` UUID PK
+- `creator_id` (FK → `profiles`)
+- `token_hash` TEXT (unique, SHA-256 of plaintext)
+- `label` TEXT (default 'default')
+- `created_at`, `expires_at`, `revoked_at`, `last_used_at`
+- See [HUD token security spec](./hud-token-security-spec.md) for full lifecycle
 
 ### `ai_credit_ledger` (recommended for audit vs simple balance)
 
@@ -92,8 +128,8 @@ Foundation documentation (Phase 0). Core tables for users, storefront JSON, immu
 
 ## Indexes and constraints
 
-- Unique: `handle`, `hubs.slug`, `wallet_ledger.idempotency_key`
-- Index: `wallet_ledger(user_id, created_at desc)`, `hub_blocks(hub_id, sort_order)`
+- Unique: `handle`, `hubs.slug`, `wallet_ledger.idempotency_key`, `orders.stripe_checkout_session_id`, `hud_tokens.token_hash`
+- Index: `wallet_ledger(user_id, created_at desc)`, `hub_blocks(hub_id, sort_order)`, `hud_tokens(creator_id) WHERE revoked_at IS NULL`, `orders(creator_id, created_at desc)`
 
 ## RLS sketch (to implement in Sprint 2+)
 
@@ -108,3 +144,7 @@ Foundation documentation (Phase 0). Core tables for users, storefront JSON, immu
 - [System architecture and data flow](./system-architecture-and-data-flow.md)
 - [Component tree and state strategy](./component-tree-and-state-strategy.md)
 - [Phase 1 MVP execution plan](./phase-1-mvp-execution-plan.md)
+- [Payment & payout spec](./payment-and-payout-spec.md)
+- [HUD token security spec](./hud-token-security-spec.md)
+- [Widget type registry](./widget-type-registry.md)
+- [Deployment & infrastructure](./deployment-and-infrastructure.md)
